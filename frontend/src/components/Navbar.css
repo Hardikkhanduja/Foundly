@@ -1,0 +1,121 @@
+.navbar {
+  height: 56px;
+  background: #111111;
+  border-bottom: 1px solid #1f1f1f;
+  box-shadow: 0 1px 0 #1f1f1f;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.navbar-inner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-brand {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ededed;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+.navbar-brand:hover { color: #fff; }
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.navbar-links a {
+  font-size: 14px;
+  font-weight: 500;
+  color: #a1a1a1;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background 0.12s, color 0.12s;
+}
+
+.navbar-links a:hover { background: #1e1e1e; color: #ededed; }
+.navbar-links a.active { color: #ededed; background: #1e1e1e; }
+
+.navbar-post {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+  background: #3b82f6 !important;
+  padding: 6px 14px !important;
+  border-radius: 6px !important;
+  margin-left: 6px;
+}
+.navbar-post:hover { background: #2563eb !important; }
+
+.navbar-logout {
+  font-size: 14px;
+  font-weight: 500;
+  color: #a1a1a1;
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s, color 0.12s;
+}
+.navbar-logout:hover { background: #1e1e1e; color: #ededed; }
+
+/* Mobile */
+.navbar-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #a1a1a1;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .navbar { padding: 0 16px; height: auto; min-height: 52px; flex-wrap: wrap; }
+  .navbar-inner { flex-wrap: wrap; padding: 10px 0; gap: 0; }
+  .navbar-brand { flex: 1; }
+  .navbar-menu-btn { display: block; }
+
+  .navbar-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 8px 0 12px;
+    border-top: 1px solid #2e2e2e;
+    margin-top: 8px;
+  }
+
+  .navbar-links.open { display: flex; }
+
+  .navbar-links a {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  .navbar-post { margin-left: 0 !important; width: 100%; text-align: center; }
+
+  .navbar-logout {
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+  }
+}
