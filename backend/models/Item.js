@@ -35,6 +35,14 @@ const itemSchema = new mongoose.Schema({
   imageUrl: {
     type: String,
   },
+  contactPhone: {
+    type: String,
+    default: '',
+  },
+  contactEmail: {
+    type: String,
+    default: '',
+  },
   postedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const path = require('path');
 const connectDB = require('./config/db');
@@ -12,10 +14,36 @@ connectDB();
 
 const app = express();
 
+// Security headers
+app.use(helmet());
+
+// Rate limiting — 100 requests per 15 min per IP globally
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many requests, please try again later.' },
+}));
+
+// Stricter rate limit on auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { message: 'Too many login attempts, please try again later.' },
+});
+
 // Middleware
 app.use(express.json());
-app.use(cors({ 
-  origin: (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '')
+app.use(cors({
+  origin: (origin, callback) => {
+    const allowed = [
+      (process.env.FRONTEND_URL || '').replace(/\/$/, ''),
+      'http://localhost:5173',
+    ];
+    if (!origin || allowed.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  }
 }));
 
 // Make uploads folder publicly accessible
@@ -29,7 +57,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 // Mount routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/claims', claimRoutes);
 app.use('/api/upload', uploadRoutes);

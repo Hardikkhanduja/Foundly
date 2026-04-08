@@ -36,8 +36,8 @@ const getItemById = async (req, res) => {
 
 const createItem = async (req, res) => {
   try {
-    const { title, description, category, type, location, date, imageUrl } = req.body;
-    const item = await new Item({ title, description, category, type, location, date, imageUrl, postedBy: req.user._id }).save();
+    const { title, description, category, type, location, date, imageUrl, contactPhone, contactEmail } = req.body;
+    const item = await new Item({ title, description, category, type, location, date, imageUrl, contactPhone: contactPhone || '', contactEmail: contactEmail || '', postedBy: req.user._id }).save();
     res.status(201).json(item);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
@@ -52,8 +52,8 @@ const updateItem = async (req, res) => {
     if (item.postedBy.toString() !== req.user._id.toString() && req.user.role !== 'admin')
       return res.status(401).json({ message: 'Not authorized' });
 
-    const { title, description, category, type, location, date, imageUrl, status } = req.body;
-    Object.assign(item, { title, description, category, type, location, date, imageUrl, status });
+    const { title, description, category, type, location, date, imageUrl, status, contactPhone, contactEmail } = req.body;
+    Object.assign(item, { title, description, category, type, location, date, imageUrl, status, contactPhone, contactEmail });
 
     const updated = await item.save();
     res.json(updated);
@@ -86,6 +86,17 @@ const getMyItems = async (req, res) => {
   }
 };
 
+const getStats = async (req, res) => {
+  try {
+    const total = await Item.countDocuments();
+    const resolved = await Item.countDocuments({ status: 'Resolved' });
+    const active = await Item.countDocuments({ status: { $in: ['Open', 'Claimed'] } });
+    res.json({ total, resolved, active });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 module.exports = {
   getItems,
   getItemById,
@@ -93,4 +104,5 @@ module.exports = {
   updateItem,
   deleteItem,
   getMyItems,
+  getStats,
 };
