@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getItemById, getItemClaims, deleteItem, updateClaimStatus } from '../api/client';
+import { UPLOADS_URL } from '../api/client';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ClaimForm from '../components/ClaimForm';
 import './ItemDetail.css';
@@ -61,7 +62,7 @@ export default function ItemDetail() {
   return (
     <div className="item-detail-wrap">
       {item.imageUrl ? (
-        <img className="item-detail-image" src={`http://localhost:5000${item.imageUrl}`} alt={item.title} />
+        <img className="item-detail-image" src={`${UPLOADS_URL}${item.imageUrl}`} alt={item.title} />
       ) : (
         <div className="item-detail-no-image">No image provided</div>
       )}

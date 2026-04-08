@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { UPLOADS_URL } from '../api/client';
 import './ItemCard.css';
 
 export default function ItemCard({ item }) {
@@ -10,7 +11,7 @@ export default function ItemCard({ item }) {
     <Link to={`/items/${item._id}`} className={`item-card type-${item.type}`}>
       {item.imageUrl ? (
         <img
-          src={`http://localhost:5000${item.imageUrl}`}
+          src={`${UPLOADS_URL}${item.imageUrl}`}
           alt={item.title}
           className="item-card-image"
         />
