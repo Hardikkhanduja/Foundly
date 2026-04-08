@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="frontend/public/favicon.svg" alt="Foundly Logo" width="80" height="80" />
+<img src="frontend/public/foundly-logo.svg" alt="Foundly Logo" width="100" height="110" />
 
 # 🔍 Foundly
 
@@ -70,8 +70,8 @@ foundly/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/foundly.git
-cd foundly
+git clone https://github.com/Hardikkhanduja/Foundly.git
+cd Foundly
 ```
 
 ### 2. Set up the backend
@@ -147,7 +147,7 @@ Tests use **Vitest** + **Testing Library** + **MSW** for API mocking, and **fast
 ## 📁 Project Structure
 
 ```
-foundly/
+Foundly/
 ├── backend/
 │   ├── config/          # Database connection
 │   ├── controllers/     # Route handlers
@@ -187,7 +187,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 <div align="center">
 
-Made with ❤️ by the Hardik Khanduja
+Made with ❤️ by [Hardik Khanduja](https://github.com/Hardikkhanduja)
 
 *Helping communities reconnect people with their belongings.*
 
