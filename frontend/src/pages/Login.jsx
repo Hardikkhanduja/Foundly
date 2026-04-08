@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { loginUser } from '../api/client';
 import './Login.css';
@@ -8,7 +9,6 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
 
   const auth = useAuth();
@@ -21,31 +21,18 @@ export default function Login() {
     const errors = {};
     if (!email.trim()) errors.email = 'Email is required.';
     if (!password) errors.password = 'Password is required.';
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
-    }
+    else if (password.length < 6) errors.password = 'Password must be at least 6 characters.';
+    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
 
     setFieldErrors({});
-    setError('');
     setLoading(true);
-
     const { data, error: apiError } = await loginUser(email, password);
-
     setLoading(false);
 
-    if (apiError) {
-      setError(apiError.message);
-      return;
-    }
+    if (apiError) { toast.error(apiError.message); return; }
 
-    auth.login(data.token, {
-      _id: data._id,
-      name: data.name,
-      email: data.email,
-      role: data.role,
-    });
-
+    auth.login(data.token, { _id: data._id, name: data.name, email: data.email, role: data.role });
+    toast.success(`Welcome back, ${data.name}!`);
     navigate(location.state?.from || '/');
   }
 
@@ -66,9 +53,7 @@ export default function Login() {
               placeholder="you@example.com"
               autoComplete="email"
             />
-            {fieldErrors.email && (
-              <span className="field-error">{fieldErrors.email}</span>
-            )}
+            {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
           </div>
 
           <div className="form-group">
@@ -81,12 +66,8 @@ export default function Login() {
               placeholder="••••••••"
               autoComplete="current-password"
             />
-            {fieldErrors.password && (
-              <span className="field-error">{fieldErrors.password}</span>
-            )}
+            {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
           </div>
-
-          {error && <p className="form-error">{error}</p>}
 
           <button type="submit" className="submit-btn" disabled={loading}>
             {loading ? 'Logging in...' : 'Log In'}

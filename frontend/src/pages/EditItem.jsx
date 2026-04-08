@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { getItemById, updateItem, uploadImage } from '../api/client';
 import LoadingSpinner from '../components/LoadingSpinner';
 import './EditItem.css';
@@ -19,28 +20,27 @@ export default function EditItem() {
   const [imageUrl, setImageUrl] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
-  const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     async function fetchItem() {
       const { data, error: fetchError } = await getItemById(id);
       setFetchLoading(false);
-      if (fetchError) {
-        setError(fetchError.message);
-        return;
-      }
+      if (fetchError) { toast.error(fetchError.message); return; }
       setTitle(data.title || '');
       setDescription(data.description || '');
       setCategory(data.category || '');
       setType(data.type || '');
       setLocation(data.location || '');
-      // Normalize date to YYYY-MM-DD for the date input
       setDate(data.date ? data.date.slice(0, 10) : '');
       setImageUrl(data.imageUrl || '');
       if (data.imageUrl) setImagePreview(data.imageUrl);
+      setContactPhone(data.contactPhone || '+91 ');
+      setContactEmail(data.contactEmail || '');
     }
     fetchItem();
   }, [id]);
@@ -65,52 +65,26 @@ export default function EditItem() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-
     const errors = validate();
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
-    }
-
+    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
     setFieldErrors({});
-    setError('');
     setLoading(true);
 
     let finalImageUrl = imageUrl;
-
     if (imageFile) {
       const { data: uploadData, error: uploadError } = await uploadImage(imageFile);
-      if (uploadError) {
-        setError(uploadError.message);
-        setLoading(false);
-        return;
-      }
+      if (uploadError) { toast.error(uploadError.message); setLoading(false); return; }
       finalImageUrl = uploadData.imageUrl;
     }
 
-    const { data, error: updateError } = await updateItem(id, {
-      title,
-      description,
-      category,
-      type,
-      location,
-      date,
-      imageUrl: finalImageUrl,
-    });
-
+    const { error: updateError } = await updateItem(id, { title, description, category, type, location, date, imageUrl: finalImageUrl, contactPhone, contactEmail });
     setLoading(false);
-
-    if (updateError) {
-      setError(updateError.message);
-      return;
-    }
-
+    if (updateError) { toast.error(updateError.message); return; }
+    toast.success('Item updated!');
     navigate(`/items/${id}`);
   }
 
-  if (fetchLoading) {
-    return <LoadingSpinner />;
-  }
+  if (fetchLoading) return <LoadingSpinner />;
 
   return (
     <div className="post-wrap">
@@ -165,6 +139,21 @@ export default function EditItem() {
           </div>
         </div>
 
+        <div className="contact-section">
+          <div className="contact-section-label">Contact details (optional)</div>
+          <p className="contact-section-hint">Visible only to logged-in users. Helps people reach you directly.</p>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="contactPhone">Phone number</label>
+              <input id="contactPhone" type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="+91 98765 43210" />
+            </div>
+            <div className="form-group">
+              <label htmlFor="contactEmail">Contact email</label>
+              <input id="contactEmail" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="you@example.com" />
+            </div>
+          </div>
+        </div>
+
         <div className="form-group">
           <label>Photo (optional)</label>
           <label className="file-upload-label" htmlFor="image">
@@ -174,10 +163,14 @@ export default function EditItem() {
             }
           </label>
           <input id="image" type="file" accept="image/*" className="file-upload-input" onChange={handleFileChange} />
-          {imagePreview && <img src={imagePreview} alt="Preview" className="image-preview" />}
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Preview"
+              style={{ height: 200, objectFit: 'cover', borderRadius: 8, marginTop: 10, width: '100%' }}
+            />
+          )}
         </div>
-
-        {error && <div className="error-message">{error}</div>}
 
         <button type="submit" className="submit-btn" disabled={loading}>
           {loading ? 'Saving...' : 'Save changes'}

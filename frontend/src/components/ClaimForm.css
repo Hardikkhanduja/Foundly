@@ -48,3 +48,23 @@
   gap: 8px;
   margin-top: 12px;
 }
+
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  background: #25d366;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.btn-whatsapp:hover {
+  background: #1ebe5d;
+  color: #fff;
+}

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { setOnUnauthorized } from '../api/client';
+import { toast } from 'react-toastify';
 
 const AuthContext = createContext(null);
 
@@ -28,9 +29,15 @@ export function AuthProvider({ children }) {
 
       if (isExpired) {
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
       } else {
-        const { _id, name, email, role } = decoded;
-        setUser({ _id, name, email, role });
+        const stored = localStorage.getItem('user');
+        if (stored) {
+          setUser(JSON.parse(stored));
+        } else {
+          const { _id, name, email, role } = decoded;
+          setUser({ _id, name, email, role });
+        }
         setToken(storedToken);
       }
     }
@@ -41,20 +48,24 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     setOnUnauthorized(() => {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setUser(null);
       setToken(null);
+      toast.info('Your session expired. Please log in again.');
       window.location.href = '/login';
     });
   }, []);
 
   function login(newToken, userData) {
     localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
   }
 
   function logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { createItem, uploadImage } from '../api/client';
 import './PostItem.css';
 
@@ -7,11 +8,10 @@ const CATEGORIES = ['Electronics', 'Documents', 'Clothing', 'Keys', 'Bags', 'Oth
 
 export default function PostItem() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ title: '', description: '', category: '', type: '', location: '', date: '' });
+  const [form, setForm] = useState({ title: '', description: '', category: '', type: '', location: '', date: '', contactPhone: '+91 ', contactEmail: '' });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
 
   function set(key) { return (e) => setForm(f => ({ ...f, [key]: e.target.value })); }
@@ -39,19 +39,19 @@ export default function PostItem() {
     const errs = validate();
     if (Object.keys(errs).length) { setFieldErrors(errs); return; }
     setFieldErrors({});
-    setError('');
     setLoading(true);
 
     let imageUrl = '';
     if (imageFile) {
       const { data: up, error: upErr } = await uploadImage(imageFile);
-      if (upErr) { setError(upErr.message); setLoading(false); return; }
+      if (upErr) { toast.error(upErr.message); setLoading(false); return; }
       imageUrl = up.imageUrl;
     }
 
     const { data, error: createErr } = await createItem({ ...form, imageUrl });
     setLoading(false);
-    if (createErr) { setError(createErr.message); return; }
+    if (createErr) { toast.error(createErr.message); return; }
+    toast.success('Item posted successfully!');
     navigate(`/items/${data._id}`);
   }
 
@@ -108,6 +108,21 @@ export default function PostItem() {
           </div>
         </div>
 
+        <div className="contact-section">
+          <div className="contact-section-label">Contact details (optional)</div>
+          <p className="contact-section-hint">Visible only to logged-in users. Helps people reach you directly.</p>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="contactPhone">Phone number</label>
+              <input id="contactPhone" type="tel" value={form.contactPhone} onChange={set('contactPhone')} placeholder="+91 98765 43210" />
+            </div>
+            <div className="form-group">
+              <label htmlFor="contactEmail">Contact email</label>
+              <input id="contactEmail" type="email" value={form.contactEmail} onChange={set('contactEmail')} placeholder="you@example.com" />
+            </div>
+          </div>
+        </div>
+
         <div className="form-group">
           <label>Photo (optional)</label>
           <label className="file-upload-label" htmlFor="image">
@@ -117,10 +132,15 @@ export default function PostItem() {
             }
           </label>
           <input id="image" type="file" accept="image/*" className="file-upload-input" onChange={handleFile} />
-          {imagePreview && <img src={imagePreview} alt="Preview" className="image-preview" />}
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="image-preview"
+              style={{ height: 200, objectFit: 'cover', borderRadius: 8, marginTop: 10 }}
+            />
+          )}
         </div>
-
-        {error && <div className="error-message">{error}</div>}
 
         <button type="submit" className="submit-btn" disabled={loading}>
           {loading ? 'Posting...' : 'Post item'}

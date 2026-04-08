@@ -61,6 +61,7 @@ export const getItems = (params = {}) => {
 };
 
 export const getItemById = (id) => request('GET', `/items/${id}`);
+export const getItemStats = () => request('GET', '/items/stats');
 export const createItem = (data) => request('POST', '/items', data);
 export const updateItem = (id, data) => request('PUT', `/items/${id}`, data);
 export const deleteItem = (id) => request('DELETE', `/items/${id}`);

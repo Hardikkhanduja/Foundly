@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { getMyItems, getMyClaims, deleteItem } from '../api/client';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -12,24 +13,28 @@ export default function Dashboard() {
   const [claims, setClaims] = useState([]);
   const [itemsLoading, setItemsLoading] = useState(true);
   const [claimsLoading, setClaimsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function load() {
       const [ir, cr] = await Promise.all([getMyItems(), getMyClaims()]);
-      if (ir.error) setError(ir.error.message); else setItems(ir.data);
+      if (ir.error) toast.error(ir.error.message); else setItems(ir.data);
       setItemsLoading(false);
-      if (cr.error) setError(cr.error.message); else setClaims(cr.data);
+      if (cr.error) toast.error(cr.error.message); else setClaims(cr.data);
       setClaimsLoading(false);
     }
     load();
   }, []);
 
-  async function handleDelete(id) {
-    if (!window.confirm('Delete this item?')) return;
-    const { error: err } = await deleteItem(id);
-    if (err) setError(err.message);
-    else setItems(prev => prev.filter(i => i._id !== id));
+  async function handleDelete() {
+    setDeleting(true);
+    const { error: err } = await deleteItem(deleteTarget);
+    setDeleting(false);
+    setDeleteTarget(null);
+    if (err) { toast.error(err.message); return; }
+    toast.success('Item deleted.');
+    setItems(prev => prev.filter(i => i._id !== deleteTarget));
   }
 
   return (
@@ -38,8 +43,6 @@ export default function Dashboard() {
         <h1>Dashboard</h1>
         <span className="dash-user">{user?.name}</span>
       </div>
-
-      {error && <div className="error-message">{error}</div>}
 
       <div className="tabs">
         <button className={`tab-btn${tab === 'items' ? ' active' : ''}`} onClick={() => setTab('items')}>
@@ -53,9 +56,10 @@ export default function Dashboard() {
       {tab === 'items' && (
         itemsLoading ? <LoadingSpinner /> : items.length === 0 ? (
           <div className="empty">
+            <div style={{ fontSize: 40, marginBottom: 12 }}>📦</div>
             <h3>No items yet</h3>
-            <p>Start by posting a lost or found item</p>
-            <Link to="/post-item">Post an item</Link>
+            <p>You haven't posted any items yet.</p>
+            <Link to="/post-item" className="btn btn-primary btn-sm" style={{ marginTop: 12 }}>Post an item</Link>
           </div>
         ) : (
           <table className="data-table">
@@ -80,7 +84,7 @@ export default function Dashboard() {
                     </span>
                   </td>
                   <td style={{ color: '#71717a', fontSize: 13 }}>{new Date(item.createdAt).toLocaleDateString()}</td>
-                  <td><button className="btn-del" onClick={() => handleDelete(item._id)}>Delete</button></td>
+                  <td><button className="btn-del" onClick={() => setDeleteTarget(item._id)}>Delete</button></td>
                 </tr>
               ))}
             </tbody>
@@ -91,8 +95,9 @@ export default function Dashboard() {
       {tab === 'claims' && (
         claimsLoading ? <LoadingSpinner /> : claims.length === 0 ? (
           <div className="empty">
+            <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
             <h3>No claims yet</h3>
-            <p>Browse items and submit a claim if you find something that belongs to you</p>
+            <p>You haven't claimed any items yet.</p>
           </div>
         ) : (
           <div className="claims-list">
@@ -107,6 +112,21 @@ export default function Dashboard() {
             ))}
           </div>
         )
+      )}
+
+      {deleteTarget && (
+        <div className="modal-overlay" onClick={() => setDeleteTarget(null)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <h3>Delete this item?</h3>
+            <p>This cannot be undone.</p>
+            <div className="modal-actions">
+              <button className="btn btn-secondary btn-sm" onClick={() => setDeleteTarget(null)} disabled={deleting}>Cancel</button>
+              <button className="btn btn-danger btn-sm" onClick={handleDelete} disabled={deleting}>
+                {deleting ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

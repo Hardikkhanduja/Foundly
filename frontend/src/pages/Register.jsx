@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { registerUser } from '../api/client';
 import './Register.css';
@@ -9,7 +10,6 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
 
   const auth = useAuth();
@@ -22,31 +22,18 @@ export default function Register() {
     if (!name.trim()) errors.name = 'Name is required.';
     if (!email.trim()) errors.email = 'Email is required.';
     if (!password) errors.password = 'Password is required.';
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
-    }
+    else if (password.length < 6) errors.password = 'Password must be at least 6 characters.';
+    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
 
     setFieldErrors({});
-    setError('');
     setLoading(true);
-
     const { data, error: apiError } = await registerUser(name, email, password);
-
     setLoading(false);
 
-    if (apiError) {
-      setError(apiError.message);
-      return;
-    }
+    if (apiError) { toast.error(apiError.message); return; }
 
-    auth.login(data.token, {
-      _id: data._id,
-      name: data.name,
-      email: data.email,
-      role: data.role,
-    });
-
+    auth.login(data.token, { _id: data._id, name: data.name, email: data.email, role: data.role });
+    toast.success('Account created! Welcome to Foundly.');
     navigate('/');
   }
 
@@ -67,9 +54,7 @@ export default function Register() {
               placeholder="Your name"
               autoComplete="name"
             />
-            {fieldErrors.name && (
-              <span className="field-error">{fieldErrors.name}</span>
-            )}
+            {fieldErrors.name && <span className="field-error">{fieldErrors.name}</span>}
           </div>
 
           <div className="form-group">
@@ -82,9 +67,7 @@ export default function Register() {
               placeholder="you@example.com"
               autoComplete="email"
             />
-            {fieldErrors.email && (
-              <span className="field-error">{fieldErrors.email}</span>
-            )}
+            {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
           </div>
 
           <div className="form-group">
@@ -94,15 +77,11 @@ export default function Register() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Min. 6 characters"
               autoComplete="new-password"
             />
-            {fieldErrors.password && (
-              <span className="field-error">{fieldErrors.password}</span>
-            )}
+            {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
           </div>
-
-          {error && <p className="form-error">{error}</p>}
 
           <button type="submit" className="submit-btn" disabled={loading}>
             {loading ? 'Creating account...' : 'Register'}
