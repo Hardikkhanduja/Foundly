@@ -13,7 +13,7 @@ export default function Browse() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [type, setType] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('Open');
   const [sort, setSort] = useState('newest');
   const [page, setPage] = useState(1);
 
@@ -58,8 +58,10 @@ export default function Browse() {
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   function clearFilters() {
-    setSearch(''); setCategory(''); setType(''); setStatus(''); setSort('newest'); setPage(1);
+    setSearch(''); setCategory(''); setType(''); setStatus('Open'); setSort('newest'); setPage(1);
   }
+
+  const hasFilters = search || category || type || status !== 'Open' || sort !== 'newest';
 
   function onFilterChange(setter) {
     return (e) => { setter(e.target.value); setPage(1); };
@@ -97,8 +99,8 @@ export default function Browse() {
           </select>
 
           <select value={status} onChange={onFilterChange(setStatus)}>
+            <option value="Open">Open only</option>
             <option value="">All statuses</option>
-            <option value="Open">Open</option>
             <option value="Claimed">Claimed</option>
             <option value="Resolved">Resolved</option>
           </select>
