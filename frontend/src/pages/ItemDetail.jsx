@@ -21,6 +21,7 @@ export default function ItemDetail() {
   const [claimsLoading, setClaimsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [dismissedClaims, setDismissedClaims] = useState([]);
 
   useEffect(() => { fetchItem(); }, [id]); // eslint-disable-line
 
@@ -56,6 +57,10 @@ export default function ItemDetail() {
     toast.success(status === 'approved' ? 'Claim approved.' : 'Claim rejected.');
     fetchClaims();
     fetchItem();
+    // Auto-dismiss the claim row after 4 seconds
+    setTimeout(() => {
+      setDismissedClaims(prev => [...prev, claimId]);
+    }, 4000);
   }
 
   async function handleMarkResolved() {
@@ -114,8 +119,8 @@ export default function ItemDetail() {
         </div>
       </div>
 
-      {/* Contact details — only for logged-in users */}
-      {user && (item.contactPhone || item.contactEmail) && (
+      {/* Contact details — visible to logged-in non-owners only */}
+      {user && !isOwner && (item.contactPhone || item.contactEmail) && (
         <div className="contact-info-box">
           <div className="contact-info-title">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:6}}>
@@ -132,7 +137,7 @@ export default function ItemDetail() {
                   </svg>
                   {item.contactPhone}
                 </a>
-              <a
+                <a
                   href={`https://wa.me/${item.contactPhone.replace(/\D/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -157,7 +162,7 @@ export default function ItemDetail() {
         </div>
       )}
 
-      {user && !item.contactPhone && !item.contactEmail && !isOwner && (
+      {user && !isOwner && !item.contactPhone && !item.contactEmail && (
         <div className="contact-info-box contact-info-empty">
           No contact details provided for this item.
         </div>
@@ -195,12 +200,22 @@ export default function ItemDetail() {
           <h2>Claims ({claims.length})</h2>
           {claimsLoading ? <LoadingSpinner /> : claims.length === 0 ? (
             <p className="no-claims">No claims yet.</p>
-          ) : claims.map(claim => (
-            <div key={claim._id} className="claim-row">
+          ) : claims.filter(c => !dismissedClaims.includes(c._id)).map(claim => (
+            <div key={claim._id} className={`claim-row${dismissedClaims.includes(claim._id) ? ' claim-row-dismissed' : ''}`}>
               <div className="claim-row-info">
                 <div className="claim-row-name">{claim.claimant?.name}</div>
                 <div className="claim-row-msg">{claim.message}</div>
                 <span className={`badge badge-${claim.status}`}>{claim.status}</span>
+                {claim.status === 'approved' && claim.claimant?.email && (
+                  <div className="claim-contact-hint">
+                    Contact claimant: <a href={`mailto:${claim.claimant.email}`}>{claim.claimant.email}</a>
+                  </div>
+                )}
+                {claim.status === 'approved' && item.contactPhone && (
+                  <div className="claim-contact-hint">
+                    Your number shared: <strong>{item.contactPhone}</strong>
+                  </div>
+                )}
               </div>
               {claim.status === 'pending' && (
                 <div className="claim-row-actions">

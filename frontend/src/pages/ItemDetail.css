@@ -163,3 +163,27 @@
   .claim-row { flex-direction: column; }
   .claim-row-actions { width: 100%; }
 }
+
+.claim-contact-hint {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 6px;
+}
+
+.claim-contact-hint a {
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.claim-contact-hint a:hover { text-decoration: underline; }
+
+@keyframes claimDismiss {
+  from { opacity: 1; transform: translateX(0); max-height: 200px; }
+  to   { opacity: 0; transform: translateX(20px); max-height: 0; padding: 0; margin: 0; }
+}
+
+.claim-row-dismissed {
+  animation: claimDismiss 0.4s ease forwards;
+  overflow: hidden;
+}

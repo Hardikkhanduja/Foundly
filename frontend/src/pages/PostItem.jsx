@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { createItem, uploadImage } from '../api/client';
+import ImageUploader from '../components/ImageUploader';
 import './PostItem.css';
 
 const CATEGORIES = ['Electronics', 'Documents', 'Clothing', 'Keys', 'Bags', 'Others'];
@@ -15,13 +16,6 @@ export default function PostItem() {
   const [fieldErrors, setFieldErrors] = useState({});
 
   function set(key) { return (e) => setForm(f => ({ ...f, [key]: e.target.value })); }
-
-  function handleFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-  }
 
   function validate() {
     const e = {};
@@ -125,21 +119,10 @@ export default function PostItem() {
 
         <div className="form-group">
           <label>Photo (optional)</label>
-          <label className="file-upload-label" htmlFor="image">
-            {imageFile
-              ? <><strong>{imageFile.name}</strong><span>Click to change</span></>
-              : <><strong>Click to upload a photo</strong><span>JPEG, PNG, WebP</span></>
-            }
-          </label>
-          <input id="image" type="file" accept="image/*" className="file-upload-input" onChange={handleFile} />
-          {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="image-preview"
-              style={{ height: 200, objectFit: 'cover', borderRadius: 8, marginTop: 10 }}
-            />
-          )}
+          <ImageUploader
+            preview={imagePreview}
+            onFileSelect={(file, url) => { setImageFile(file); setImagePreview(url); }}
+          />
         </div>
 
         <button type="submit" className="submit-btn" disabled={loading}>

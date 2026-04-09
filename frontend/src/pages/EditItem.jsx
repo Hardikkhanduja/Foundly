@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getItemById, updateItem, uploadImage } from '../api/client';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ImageUploader from '../components/ImageUploader';
 import './EditItem.css';
 
 const CATEGORIES = ['Electronics', 'Documents', 'Clothing', 'Keys', 'Bags', 'Others'];
@@ -156,20 +157,14 @@ export default function EditItem() {
 
         <div className="form-group">
           <label>Photo (optional)</label>
-          <label className="file-upload-label" htmlFor="image">
-            {imageFile
-              ? <><strong>{imageFile.name}</strong><span>Click to change</span></>
-              : <><strong>Click to upload a photo</strong><span>JPEG, PNG, WebP</span></>
-            }
-          </label>
-          <input id="image" type="file" accept="image/*" className="file-upload-input" onChange={handleFileChange} />
-          {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Preview"
-              style={{ height: 200, objectFit: 'cover', borderRadius: 8, marginTop: 10, width: '100%' }}
-            />
-          )}
+          <ImageUploader
+            preview={imagePreview}
+            onFileSelect={(file, url) => {
+              setImageFile(file);
+              if (!file) { setImagePreview(null); setImageUrl(''); }
+              else setImagePreview(url);
+            }}
+          />
         </div>
 
         <button type="submit" className="submit-btn" disabled={loading}>

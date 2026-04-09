@@ -28,14 +28,14 @@ export default function ClaimForm({ itemId, contactPhone, onSuccess, onCancel })
       <h3>Submit a claim</h3>
       {error && <div className="error-message">{error}</div>}
       <label className="claim-form-label" htmlFor="claim-msg">
-        Why do you think this item belongs to you?
+        Your reason for claiming this item
       </label>
       <textarea
         id="claim-msg"
         className="claim-form-textarea"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder="Describe identifying details, when and where you lost it..."
+        placeholder="Describe identifying details — when and where you lost it, any unique features..."
       />
       <div className="claim-form-actions">
         <button type="submit" className="btn btn-primary btn-sm" disabled={loading}>
