@@ -67,8 +67,6 @@ export default function Browse() {
     return (e) => { setter(e.target.value); setPage(1); };
   }
 
-  const hasFilters = search || category || type || status || sort !== 'newest';
-
   return (
     <div className="browse-wrap">
       <div className="browse-header">
