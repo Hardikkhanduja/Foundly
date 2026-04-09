@@ -14,8 +14,26 @@ connectDB();
 
 const app = express();
 
-// Security headers
-app.use(helmet());
+// Middleware
+app.use(express.json());
+
+// CORS must be before Helmet so preflight requests are handled correctly
+app.use(cors({
+  origin: (origin, callback) => {
+    const allowed = [
+      (process.env.FRONTEND_URL || '').replace(/\/$/, ''),
+      'http://localhost:5173',
+    ];
+    if (!origin || allowed.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
+
+// Security headers (after CORS)
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // allow images/uploads to load cross-origin
+}));
 
 // Rate limiting — 100 requests per 15 min per IP globally
 app.use(rateLimit({
@@ -32,19 +50,6 @@ const authLimiter = rateLimit({
   max: 20,
   message: { message: 'Too many login attempts, please try again later.' },
 });
-
-// Middleware
-app.use(express.json());
-app.use(cors({
-  origin: (origin, callback) => {
-    const allowed = [
-      (process.env.FRONTEND_URL || '').replace(/\/$/, ''),
-      'http://localhost:5173',
-    ];
-    if (!origin || allowed.includes(origin)) return callback(null, true);
-    callback(new Error('Not allowed by CORS'));
-  }
-}));
 
 // Make uploads folder publicly accessible
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
